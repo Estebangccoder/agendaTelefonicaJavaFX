@@ -11,10 +11,10 @@ import model.Contacto;
 
 public class agendaController {
 
-    // 🔹 Modelo principal
+    //  Modelo principal
     private Agenda agenda = new Agenda(10);
 
-    // 🔹 Lista observable para mostrar en la tabla
+    // Lista observable para mostrar en la tabla
     private ObservableList<Contacto> listaContactos = FXCollections.observableArrayList();
 
     @FXML
@@ -41,7 +41,7 @@ public class agendaController {
     @FXML
     private TextField txtTelefono;
 
-    // 🔹 Inicializa la tabla al cargar la vista
+    //  Inicializa la tabla al cargar la vista
     @FXML
     public void initialize() {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
@@ -58,7 +58,21 @@ public class agendaController {
         String telefono = txtTelefono.getText();
 
         try {
+
+
+            if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty()) {
+                mostrarAlerta("Error de Validación", "Todos los campos deben estar llenos", Alert.AlertType.ERROR);
+                return;
+            }
+
+            //  Validación: nombre y apellido no pueden ser iguales
+            if (nombre.equalsIgnoreCase(apellido)) {
+                mostrarAlerta("Error de Validación", "El nombre y el apellido no pueden ser iguales", Alert.AlertType.ERROR);
+                return;
+            }
+
             Contacto nuevo = new Contacto(nombre, apellido, telefono);
+
             if (agenda.anadirContacto(nuevo)) {
                 listaContactos.add(nuevo);
                 limpiarCampos();
@@ -76,6 +90,10 @@ public class agendaController {
         String nombre = txtNombre.getText();
         String apellido = txtApellido.getText();
 
+        if (nombre.isEmpty() || apellido.isEmpty()) {
+            mostrarAlerta("Error de Validación", "Debes ingresar nombre y apellido para buscar", Alert.AlertType.ERROR);
+            return;
+        }
         Contacto encontrado = agenda.buscarContacto(nombre, apellido);
         if (encontrado != null) {
             tableContactos.getSelectionModel().select(encontrado);
@@ -101,7 +119,11 @@ public class agendaController {
     @FXML
     void listarContacto(ActionEvent event) {
         listaContactos.setAll(agenda.listarContactos());
-        mostrarAlerta("Lista actualizada", "Se han cargado todos los contactos", Alert.AlertType.INFORMATION);
+
+        //  Ordenar alfabéticamente por nombre
+        FXCollections.sort(listaContactos, (c1, c2) -> c1.getNombre().compareToIgnoreCase(c2.getNombre()));
+
+        mostrarAlerta("Lista actualizada", "Se han cargado todos los contactos en orden alfabético", Alert.AlertType.INFORMATION);
     }
 
     @FXML
@@ -121,14 +143,14 @@ public class agendaController {
         }
     }
 
-    // 🔹 Método de utilidad para limpiar los campos
+    //  Método de utilidad para limpiar los campos
     private void limpiarCampos() {
         txtNombre.clear();
         txtApellido.clear();
         txtTelefono.clear();
     }
 
-    // 🔹 Método para mostrar alertas
+    //  Método para mostrar alertas
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
